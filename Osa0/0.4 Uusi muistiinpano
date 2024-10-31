@@ -1,0 +1,41 @@
+```mermaid
+
+sequenceDiagram
+    participant user as User
+    participant browser as Browser
+    participant server as Server
+
+    user->>browser: Käyttäjä kirjoittaa muistiinpanon syöttökenttään ja painaa "Save"
+    Note right of browser: Selain lukee käyttäjän syötteen ja valmistelee POST-pyynnön
+    
+    browser->>server: POST https://studies.cs.helsinki.fi/exampleapp/new_note (sisältää uuden muistiinpanon JSON-muodossa)
+    activate server
+    Note right of server: Palvelin vastaanottaa muistiinpanon ja tallentaa sen tietokantaan
+    
+    server-->>browser: Vastaus HTTP 302-statuskoodilla: Redirect /notes
+    deactivate server
+    Note right of browser: Selain saa uudelleenohjauspyynnön ja lataa uudelleen /notes-sivun
+    
+    browser->>server: GET https://studies.cs.helsinki.fi/exampleapp/notes
+    activate server
+    server-->>browser: HTML-pyyntö
+    deactivate server
+    
+    browser->>server: GET https://studies.cs.helsinki.fi/exampleapp/main.css
+    activate server
+    server-->>browser: CSS-tiedosto
+    deactivate server
+    
+    browser->>server: GET https://studies.cs.helsinki.fi/exampleapp/main.js
+    activate server
+    server-->>browser: JavaScript-tiedosto
+    deactivate server
+
+    Note right of browser: Selain suorittaa JavaScript-koodin, joka hakee JSON-muodossa olevat muistiinpanot
+
+    browser->>server: GET https://studies.cs.helsinki.fi/exampleapp/data.json
+    activate server
+    server-->>browser: JSON-tiedot (sisältää kaikki muistiinpanot, myös uuden)
+    deactivate server
+
+    Note right of browser: Selain suorittaa palautefunktion, joka renderöi päivitetyn muistiinpanolistan
