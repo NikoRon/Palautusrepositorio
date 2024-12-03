@@ -11,9 +11,10 @@ const Content = ({ parts }) => (
 );
 
 // Muutoksen jälkeen, total laskee nyt olioiden kautta.
-const Total = ({ parts }) => (
-  <p>Number of exercises {parts.reduce((sum, part) => sum + part.exercises, 0)}</p>
-);
+const Total = ({ parts }) => {
+  const totalExercises = parts.reduce((sum, part) => sum + part.exercises, 0);
+  return <p>Number of exercises {totalExercises}</p>;
+};
 
 const App = () => {
   const course = {
