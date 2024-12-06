@@ -16,7 +16,7 @@ const Statistics = ({ good, neutral, bad, total, average, positivePercentage }) 
         <StatisticLine text="neutral" value={neutral} />
         <StatisticLine text="bad" value={bad} />
         <StatisticLine text="all" value={total} />
-        <StatisticLine text="average" value={average.toFixed(2)} />
+        <StatisticLine text="average" value={average} />
         <StatisticLine text="positive" value={`${positivePercentage} %`} />
       </tbody>
     </table>
