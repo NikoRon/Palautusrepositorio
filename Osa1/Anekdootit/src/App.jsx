@@ -13,21 +13,40 @@ const App = () => {
   ];
 
   const [selected, setSelected] = useState(0);
-
+  //Täytetään taulukon mitta nollilla, fill(0)
+  const [votes, setVotes] = useState(Array(anecdotes.length).fill(0))
+  //Satunnainen anekdootti
   const handleNextAnecdote = () => {
     const randomIndex = Math.floor(Math.random() * anecdotes.length);
     setSelected(randomIndex);
   };
 
   const giveVote = () => {
-
+    const votesCopy = [...votes];
+    votesCopy[selected] += 1;
+    setVotes(votesCopy);
   }
+
+  //Eniten ääniä saaneen valitseminen muuttujaan
+  const mostVoted = votes.indexOf(Math.max(...votes));
 
   return (
     <div>
+      <h1>Anecdote of the day</h1>
       <p>{anecdotes[selected]}</p>
-      <button onClick={giveVote}>vote</button>
-      <button onClick={handleNextAnecdote}>next anecdote</button>
+      <p>Has {votes[selected]} votes</p>
+      <button onClick={giveVote}>Vote</button>
+      <button onClick={handleNextAnecdote}>Next anecdote</button>
+
+      <h1>Anecdote with most votes</h1>
+      {votes[mostVoted] > 0 ? (
+        <p>
+          {anecdotes[mostVoted]} <br />
+          Has {votes[mostVoted]} votes
+        </p>
+      ) : (
+        <p>No votes yet</p>
+      )}
     </div>
   );
 };
