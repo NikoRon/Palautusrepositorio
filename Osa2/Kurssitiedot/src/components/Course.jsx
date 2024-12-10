@@ -1,7 +1,7 @@
 import React from "react";
 
 //Course.jsx:ään siirretään kaikki sen alikomponentit eli 
-//alla olevat header, content ja total
+//alla olevat header, content ja total. Appiin jää vain 'data' ja return
 const Course = ({ course }) => {
     return(
       <div>
