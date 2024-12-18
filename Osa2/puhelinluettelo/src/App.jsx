@@ -4,54 +4,99 @@ import axios from 'axios';
 import Filtteri from './components/Filtteri';
 import PersonForm from './components/PersonForm';
 import Persons from './components/Persons';
+//uusi moduuli
+import nameService from './services/names.js'
 //tämä appi sisältää paljon itselle tehtyjä selvennyksiä koska vaikea tehtävä.
 
 
-//pohjustukset ja annettua testidataa
+//pohjustukset, testidata siirretty omaan moduuliin.
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState('');
   const [newNumber, setNewNumber] = useState('');
   const [filter, setFilter] = useState('');
 
-  const hook = () => {
-    console.log('effect')
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
-        console.log('promise fulfilled')
-        setPersons(response.data)
+
+//Haetaan data käyttämällä effectiä ja nameServiceä
+  useEffect(() => {
+    nameService
+      .getAll()
+      .then(persons => {
+        setPersons(persons);
       })
-  }
-
-  useEffect(hook,[])
-
+      .catch(error => {
+        console.error('Error fetching data:', error);
+      });
+  }, []);
 
   //estetään uudelleen latautuminen ja varmistetaan haun kirjainten toiminta
   const addName = (event) => {
     event.preventDefault();
-    if (persons.some(person => person.name.toLowerCase() === newName.toLowerCase())) {
-      alert(`${newName} is already added in the phonebook`);
-      return;
+  
+    const existingPerson = persons.find(person => person.name.toLowerCase() === newName.toLowerCase());
+    
+    if (existingPerson) {
+      // Jos henkilö löytyy, kysytään varmistus numeron päivittämisestä
+      if (window.confirm(`Person ${newName} is already added to phonebook, replace the old number with new one?`)) {
+        const updatedPerson = { ...existingPerson, number: newNumber };
+  
+        // Lähetetään PUT-pyyntö päivittääksemme henkilön tiedot
+        nameService
+          .update(existingPerson.id, updatedPerson)
+          .then(returnedPerson => {
+            setPersons(persons.map(person =>
+              person.id !== existingPerson.id ? person : returnedPerson
+            ));
+            setNewName('');
+            setNewNumber('');
+          })
+          .catch(error => {
+            console.error('Error updating person:', error);
+            alert('Failed to update the person\'s number.');
+          });
+      }
+      return;  // Jos henkilö on jo listalla ja numero päivitetään, ei jatketa lisäämistä
     }
-    //Tässä laitetaan kysytyt tiedot yhden objektin "nameObject" sisälle, joka concatetaan 
-    //persons-listan jatkoksi, sekä nollataan nimi- ja numerokentät uutta varten.
+  
+    // Jos henkilö ei ole listalla, lisätään uusi
     const nameObject = {
       name: newName,
       number: newNumber,
-      id: persons.length + 1,
     };
-
-    setPersons(persons.concat(nameObject));
-    setNewName('');
-    setNewNumber('');
+  
+    nameService
+      .create(nameObject)
+      .then(returnedPerson => {
+        setPersons(persons.concat(returnedPerson));
+        setNewName('');
+        setNewNumber('');
+      })
+      .catch(error => {
+        console.error('Error adding person:', error);
+        alert('Failed to add the person.');
+      });
   };
+  
 
-
+  //henkilön poisto
+  const deletePerson = (id, name) => {
+    if (window.confirm(`Delete ${name}?`)) {
+      nameService
+        .remove(id)
+        .then(() => {
+          setPersons(persons.filter(person => person.id !== id));
+        })
+        .catch(error => {
+          console.error(`Error deleting person with id ${id}:`, error);
+          alert(`Person '${name}' was already removed from server.`);
+          setPersons(persons.filter(person => person.id !== id)); // Päivitä lista
+        });
+    }
+  };
   //tapahtuman käsittelijät jokaiselle muuttujatyypille
-  const handleNameChange = (event) => {
+  function handleNameChange(event) {
     setNewName(event.target.value);
-  };
+  }
   const handleNumberChange = (event) => {
     setNewNumber(event.target.value);
   };
@@ -78,7 +123,7 @@ const App = () => {
         handleNumberChange={handleNumberChange}
       />
       <h2>Numbers</h2>
-      <Persons persons={personsToShow} />
+      <Persons persons={personsToShow} onDelete={deletePerson} />
     </div>
   );
 };
